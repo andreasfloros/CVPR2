@@ -3,6 +3,9 @@
 % ------------------------
 close all;
 
+% disable legend warnings
+warning('off', 'MATLAB:handle_graphics:exceptions:SceneNode')
+
 object_names = ["acrylic_211_", "black_foam_110_", "car_sponge_101_", ...
                 "flour_sack_410_", "kitchen_sponge_114_", "steel_vase_702_"];
 
