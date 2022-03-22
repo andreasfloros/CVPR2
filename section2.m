@@ -3,6 +3,9 @@
 % ------------------------------------------
 close all;
 
+% load PVT data from the Data Preparation section
+pvt = load("F0_PVT.mat").f0_pvt;
+
 object_colours = [1 0 0 ; 0 1 0 ; 0 0 1; 0 0 0; 0.9 0.9 0.5; 0.9 0.6 0.8];
 colours = zeros(size(pvt))';
 
@@ -11,9 +14,6 @@ for object = 0 : 5
         colours(10 * object + trial, :) = object_colours(object + 1, :);
     end
 end
-
-% load PVT data from the Data Preparation section
-pvt = load("F0_PVT.mat").f0_pvt;
 
 % ---------------------------------------
 % --- 1. Principal Component Analysis ---
@@ -27,7 +27,6 @@ pvt_cov = cov(pvt');
 pvtvectors = pvtvectors(:, ind);
 
 % visualise data with eigenvectors
-
 figure;
 scatter3(pvt(1, :), pvt(2, :), pvt(3, :), [], colours, "filled");
 hold on;
@@ -94,7 +93,6 @@ features = elecvectors(:, 1:3);
 projectedelec = features' * elec;
 
 % visualise data in three dimensions
-
 figure;
 scatter3(projectedelec(1, :), projectedelec(2, :), projectedelec(3, :), [], colours, "filled");
 

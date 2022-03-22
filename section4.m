@@ -78,6 +78,7 @@ end
 % ------------------------------------
 % --- 2. Bagging on Electrode Data ---
 % ------------------------------------
+rng(1);
 X = load("F0_Electrode_PCA.mat").projectedelec';
 Y = load("F0_Electrode_PCA.mat").f0_class';
 
@@ -89,12 +90,31 @@ testX  = X(idx,:);
 trainY = Y(~idx,:);
 testY = Y(idx,:);
 
-% a: choose number of bags as 10 for now -> usually we can use
-% cross-validation to choose number of trees in the Random Forest
-b = 10;
+% a: choose number of bags -> can check through OOB visualization
+oob_list = [];
+b_list = 1:2:50;
+for b = b_list
+    % create treebagger
+    Mdl = TreeBagger(b, X, Y, 'Method','classification', 'OOBPrediction', 'on');
+
+    % compute out of bag error
+    ooberr = oobError(Mdl, 'Mode', 'ensemble');
+    
+    % append to list of OOB error
+    oob_list = [oob_list, ooberr];
+end
+
+% plot OOB error vs. number of trees
+figure;
+plot(b_list, oob_list);
+xlabel('Trees Grown');
+ylabel('Out-of-Bag Error');
 
 % b: run algorithm and visualize two decision trees
-rng(1); % for reproducibility
+% from part a, 25 bags seems to give low OOB error - performance does not
+% improve much more after b = 25.
+b = 25;
+
 Mdl = TreeBagger(b, X, Y, 'Method','classification');
 % view(Mdl.Trees{1},'Mode','graph');
 % view(Mdl.Trees{2},'Mode','graph');
@@ -108,5 +128,3 @@ cm = confusionchart(testY,predY);
 % Comment: prediction is 100% accurate
 
 % d: discuss misclassifications
-
-
