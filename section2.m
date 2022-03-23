@@ -20,6 +20,7 @@ end
 % ---------------------------------------
 % covariance matrix and eigen decomposition
 pvt_cov = cov(pvt');
+
 [pvtvectors, pvtvalues] = eig(pvt_cov, "vector");
 
 % sort in descending order
@@ -95,6 +96,11 @@ projectedelec = features' * elec;
 % visualise data in three dimensions
 figure;
 scatter3(projectedelec(1, :), projectedelec(2, :), projectedelec(3, :), [], colours, "filled");
+title('Electrode Data Projected in 3D Space');
+xlabel('Principal Component Direction');
+ylabel('Principal Component Direction');
+zlabel('Principal Component Direction');
+
 
 % save resulting PCA for electrode
 save('F0_Electrode_PCA.mat', "projectedelec", "f0_class");
