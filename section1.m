@@ -8,10 +8,57 @@ warning('off', 'MATLAB:handle_graphics:exceptions:SceneNode')
 
 object_names = ["acrylic_211_", "black_foam_110_", "car_sponge_101_", ...
                 "flour_sack_410_", "kitchen_sponge_114_", "steel_vase_702_"];
+legend_obj_names = ["acrylic", "black foam", "car sponge", "flour sack", ...
+                "kitchen sponge", "steel vase"];
+object_colours = [1 0 0 ; 0 1 0 ; 0 0 1; 0 0 0; 0.9 0.9 0.5; 0.9 0.6 0.8];
 
 % ---------------------------------
 % --- 1. Choosing the Time Step ---
 % ---------------------------------
+% plot one sample of P, V, T
+trial = 1;
+figure;
+
+% plot pressure
+subplot(2,2,1);
+obj_idx = 1;
+for object_name = object_names
+    load("PR_CW_DATA_2021\" + object_name + num2str(trial,'%02.f') + "_HOLD.mat");
+    plot(F0pdc, 'Color', object_colours(obj_idx, :));
+    hold on;
+    obj_idx = obj_idx + 1;
+end
+hold off;
+ylabel('Pressure');
+xlabel('Time');
+
+% plot temperature
+subplot(2,2,2);
+obj_idx = 1;
+for object_name = object_names
+    load("PR_CW_DATA_2021\" + object_name + num2str(trial,'%02.f') + "_HOLD.mat");
+    plot(F0tdc, 'Color', object_colours(obj_idx, :));
+    hold on;
+    obj_idx = obj_idx + 1;
+end
+hold off;
+ylabel('Temperature');
+xlabel('Time');
+
+% plot vibration
+obj_idx = 1;
+subplot(2,2,[3 4]);
+for object_name = object_names
+    load("PR_CW_DATA_2021\" + object_name + num2str(trial,'%02.f') + "_HOLD.mat");
+    plot(F0pac(2,:), 'Color', object_colours(obj_idx, :));
+    hold on;
+    obj_idx = obj_idx + 1;
+end
+hold off;
+ylabel('Vibration');
+xlabel('Time');
+legend(legend_obj_names, 'Location','southeast');
+
 % combined plot for P,V,T for each object
 for type = ["Pressure", "Vibration", "Temperature"]
     figure;
@@ -33,7 +80,7 @@ for type = ["Pressure", "Vibration", "Temperature"]
         end
         hold off;
     end
-    legend(object_names);
+    legend(legend_obj_names);
 end
 
 % from the combined plots, we can see that the vibration is only
@@ -51,7 +98,7 @@ for trial = 1 : 10
     end
     hold off;
 end
-legend(object_names);
+legend(legend_obj_names);
 
 % a timestep of 10 looks to perform quite well when distinguishing between
 % the different objects
@@ -99,17 +146,19 @@ save('F0_Electrode.mat', "f0_electrode", "f0_class");
 f0_pvt = load("F0_PVT.mat").f0_pvt;
 f0_electrode = load("F0_Electrode.mat").f0_electrode;
 
-object_colours = [1 0 0 ; 0 1 0 ; 0 0 1; 0 0 0; 0.9 0.9 0.5; 0.9 0.6 0.8];
-colours = zeros(size(f0_pvt))';
-for object = 0 : 5
-    for trial = 1 : 10
-        colours(10 * object + trial, :) = object_colours(object + 1, :);
-    end
-end
-
-% Comment: points seem to be well separated, except for two objects (red and pink)
+% Comment: points seem to be well separated, except for two objects
+% (acrylic and steel vase)
 figure;
-scatter3(f0_pvt(1, :), f0_pvt(2, :), f0_pvt(3, :), [], colours, "filled");
+scatter3(f0_pvt(1, 1:10), f0_pvt(2, 1:10), f0_pvt(3, 1:10), [], object_colours(1, :), "filled");
+hold on;
+scatter3(f0_pvt(1, 11:20), f0_pvt(2, 11:20), f0_pvt(3, 11:20), [], object_colours(2, :), "filled");
+scatter3(f0_pvt(1, 21:30), f0_pvt(2, 21:30), f0_pvt(3, 21:30), [], object_colours(3, :), "filled");
+scatter3(f0_pvt(1, 31:40), f0_pvt(2, 31:40), f0_pvt(3, 31:40), [], object_colours(4, :), "filled");
+scatter3(f0_pvt(1, 41:50), f0_pvt(2, 41:50), f0_pvt(3, 41:50), [], object_colours(5, :), "filled");
+scatter3(f0_pvt(1, 51:60), f0_pvt(2, 51:60), f0_pvt(3, 51:60), [], object_colours(6, :), "filled");
+hold off;
+legend(legend_obj_names);
+
 xlabel('Pressure');
 ylabel('Vibration');
 zlabel('Temperature');

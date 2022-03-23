@@ -2,28 +2,41 @@
 % --- Clustering and Bagging ---
 % ------------------------------
 close all;
+rng(3);
 
 % -----------------------------
 % --- 1. K-means Clustering ---
 % -----------------------------
 pvt = load("F0_PVT.mat").f0_pvt;
 
-% there are k = 6 objects, so we can use k-means to cluster into 6 clusters
+% elbow plot to determine number of clusters k
+k_list = 1:12;
+wcss_list = [];
+for k = k_list
+    [idx, C, sumd] = kmeans(pvt', k);
+    wcss = 0;
+    for cur_idx = 1:length(idx)
+        cluster_idx = idx(cur_idx);
+        wcss = wcss + sumd(cluster_idx);
+    end
+    wcss = wcss / length(idx);
+    wcss_list = [wcss_list wcss];
+end
+figure;
+plot(k_list, wcss_list);
+xlabel('K');
+ylabel('Within Cluster Sum-of-Square Distance');
+
+% choose k = 6
 k = 6;
 cluster_idx = kmeans(pvt', k);
 
 % determine point colours after clustering
 object_colours = [1 0 0 ; 0 1 0 ; 0 0 1; 0 0 0; 0.9 0.9 0.5; 0.9 0.6 0.8];
-true_colours = zeros(size(pvt))';
-for object = 0 : 5
-    for trial = 1 : 10
-        true_colours(10 * object + trial, :) = object_colours(object + 1, :);
-    end
-end
-
+rand_colours = [0.2 0.5 0.5; 0 0.7 0; 0.2 0 0.8; 0.7 0.9 0.9; 0.1 0.3 0.7; 0.1 0.1 0.1];
 cluster_colours = zeros(size(pvt))';
 for i = 1:length(cluster_colours)
-    cluster_colours(i, :) = object_colours(cluster_idx(i), :);
+    cluster_colours(i, :) = rand_colours(cluster_idx(i), :);
 end
 
 % plot result and compare with true classes
@@ -35,11 +48,7 @@ xlabel('Pressure');
 ylabel('Vibration');
 zlabel('Temperature');
 subplot(1,2,2);
-scatter3(pvt(1, :), pvt(2, :), pvt(3, :), [], true_colours, "filled");
-title('True Classes')
-xlabel('Pressure');
-ylabel('Vibration');
-zlabel('Temperature');
+true_plot(pvt, object_colours);
 
 % Comment: clustering does not correspond too well with the real classes
 % we can experiment with different distance metrics
@@ -51,7 +60,7 @@ for dist_metric = dist_metrics
 
     cluster_colours = zeros(size(pvt))';
     for i = 1:length(cluster_colours)
-        cluster_colours(i, :) = object_colours(cluster_idx(i), :);
+        cluster_colours(i, :) = rand_colours(cluster_idx(i), :);
     end
     
     % plot result and compare with true classes
@@ -63,11 +72,7 @@ for dist_metric = dist_metrics
     ylabel('Vibration');
     zlabel('Temperature');
     subplot(1,2,2);
-    scatter3(pvt(1, :), pvt(2, :), pvt(3, :), [], true_colours, "filled");
-    title('True Classes')
-    xlabel('Pressure');
-    ylabel('Vibration');
-    zlabel('Temperature');
+    true_plot(pvt, object_colours);
 end
 
 % Comment: in general, the data is not separated well enough to use
@@ -115,9 +120,9 @@ ylabel('Out-of-Bag Error');
 % improve much more after b = 25.
 b = 25;
 
-Mdl = TreeBagger(b, X, Y, 'Method','classification');
-% view(Mdl.Trees{1},'Mode','graph');
-% view(Mdl.Trees{2},'Mode','graph');
+Mdl = TreeBagger(b, trainX, trainY, 'Method','classification');
+view(Mdl.Trees{1},'Mode','graph');
+view(Mdl.Trees{2},'Mode','graph');
 
 % c: run algorithm on test data and construct confusion matrix
 predY = convertCharsToStrings(predict(Mdl, testX));
@@ -125,6 +130,28 @@ testY = compose("%i", testY);
 
 figure;
 cm = confusionchart(testY,predY);
-% Comment: prediction is 100% accurate
 
 % d: discuss misclassifications
+
+
+% Helper Function
+function true_plot(pvt, object_colours)
+    % define the object names
+    legend_obj_names = ["acrylic", "black foam", "car sponge", "flour sack", ...
+                "kitchen sponge", "steel vase"];
+
+    % plot figure
+    scatter3(pvt(1, 1:10), pvt(2, 1:10), pvt(3, 1:10), [], object_colours(1, :), "filled");
+    hold on;
+    scatter3(pvt(1, 11:20), pvt(2, 11:20), pvt(3, 11:20), [], object_colours(2, :), "filled");
+    scatter3(pvt(1, 21:30), pvt(2, 21:30), pvt(3, 21:30), [], object_colours(3, :), "filled");
+    scatter3(pvt(1, 31:40), pvt(2, 31:40), pvt(3, 31:40), [], object_colours(4, :), "filled");
+    scatter3(pvt(1, 41:50), pvt(2, 41:50), pvt(3, 41:50), [], object_colours(5, :), "filled");
+    scatter3(pvt(1, 51:60), pvt(2, 51:60), pvt(3, 51:60), [], object_colours(6, :), "filled");
+    hold off;
+    title('True Classes');
+    xlabel('Pressure');
+    ylabel('Vibration');
+    zlabel('Temperature');
+    legend(legend_obj_names, 'Location', 'best');
+end
