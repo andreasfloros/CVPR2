@@ -62,21 +62,27 @@ legend(legend_obj_names, 'Location','southeast');
 % combined plot for P,V,T for each object
 for type = ["Pressure", "Vibration", "Temperature"]
     figure;
-    sgtitle(type + " Combined Plot");
+%     sgtitle(type + " Combined Plot");
     for trial = 1 : 10
         subplot(3,4,trial);
         hold on;
+        obj_idx = 1;
         for object_name = object_names
             load("PR_CW_DATA_2021\" + object_name + num2str(trial,'%02.f') + "_HOLD.mat");
             
             % plot combined timeseries
             if type == "Pressure"
-                plot(F0pdc);
+                plot(F0pdc, 'Color', object_colours(obj_idx, :));
+                ylabel('Pressure');
             elseif type == "Vibration"
-                plot(F0pac(2,:));
+                plot(F0pac(2,:), 'Color', object_colours(obj_idx, :));
+                ylabel('Vibration');
             else
-                plot(F0tdc);
+                plot(F0tdc, 'Color', object_colours(obj_idx, :));
+                ylabel('Temperature');
             end
+            xlabel('Time');
+            obj_idx = obj_idx + 1;
         end
         hold off;
     end
@@ -86,15 +92,19 @@ end
 % from the combined plots, we can see that the vibration is only
 % distinguishable at lower time values. We can try to zoom in:
 figure;
-sgtitle("Vibration Combined Plot - Zoomed In");
+% sgtitle("Vibration Combined Plot - Zoomed In");
 for trial = 1 : 10
     subplot(3,4,trial);
     hold on;
+    obj_idx = 1;
     for object_name = object_names
         load("PR_CW_DATA_2021\" + object_name + num2str(trial,'%02.f') + "_HOLD.mat");
         
         % plot combined timeseries
-        plot(F0pac(2,1:100));
+        plot(F0pac(2,1:100), 'Color', object_colours(obj_idx, :));
+        ylabel('Vibration');
+        xlabel('Time');
+        obj_idx = obj_idx + 1;
     end
     hold off;
 end
